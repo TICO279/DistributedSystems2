@@ -1,0 +1,50 @@
+syntax = "proto3";
+package mensajes;
+
+service Autenticador {
+    rpc Autenticar(AuthenticationRequest) returns (AuthenticationReply) {};
+}
+
+service Mensajeria {
+    rpc ObtenerBandejaEntrada(UserRequest) returns (BandejaReply){};
+    rpc ObtenerBandejaSalida(UserRequest) returns (BandejaReply){};
+    rpc Leido(LeidoRequest) returns (OperacionReply){};
+}
+
+message UserRequest {
+    optional string usuario = 1;
+}
+
+message Correo {
+    optional string idCorreo = 1;
+    optional string remitente = 2;
+    optional string destinatario = 3;
+    optional string asunto = 4;
+    optional string contenido = 5;
+    optional string fecha = 6;
+    optional bool leido = 7;
+}
+
+message BandejaReply {
+    repeated Correo correos = 1;
+}
+
+message AuthenticationRequest {
+    optional string usuario = 1;
+    optional string contrasena = 2;
+}
+
+message AuthenticationReply {
+    optional string mensaje = 1;
+    optional bool status = 2;
+}
+
+message LeidoRequest {
+    optional string usuario = 1;
+    optional string idCorreo = 2;
+}
+
+message OperacionReply {
+    optional bool exito = 1;
+    optional string mensaje = 2;
+}
