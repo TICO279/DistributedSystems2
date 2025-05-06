@@ -8,11 +8,14 @@ service Autenticador {
 service Mensajeria {
     rpc ObtenerBandejaEntrada(UserRequest) returns (BandejaReply){};
     rpc ObtenerBandejaSalida(UserRequest) returns (BandejaReply){};
+    rpc EnviarCorreo(CorreoNuevo) returns (EnviarCorreoReply){};
+    rpc EliminarCorreo(EliminarRequest) returns (OperacionReply){};
     rpc Leido(LeidoRequest) returns (OperacionReply){};
 }
 
 message UserRequest {
     optional string usuario = 1;
+    optional string token = 2;
 }
 
 message Correo {
@@ -29,6 +32,12 @@ message BandejaReply {
     repeated Correo correos = 1;
 }
 
+message EnviarCorreoReply {
+    optional bool exito = 1;
+    optional string mensaje = 2;
+    optional string idCorreo = 3;
+}
+
 message AuthenticationRequest {
     optional string usuario = 1;
     optional string contrasena = 2;
@@ -37,6 +46,7 @@ message AuthenticationRequest {
 message AuthenticationReply {
     optional string mensaje = 1;
     optional bool status = 2;
+    optional string token = 3;
 }
 
 message LeidoRequest {
@@ -47,4 +57,23 @@ message LeidoRequest {
 message OperacionReply {
     optional bool exito = 1;
     optional string mensaje = 2;
+}
+
+message CorreoNuevo {
+    optional string remitente = 1;
+    optional string destinatario = 2;
+    optional string asunto = 3;
+    optional string contenido = 4;
+}
+
+enum TipoBandeja {
+    ENTRADA = 0;
+    SALIDA = 1;
+}
+
+message EliminarRequest {
+    optional string usuario = 1;
+    optional string idCorreo = 2;
+    
+    TipoBandeja Bandeja = 3;
 }
