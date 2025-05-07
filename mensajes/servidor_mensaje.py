@@ -25,3 +25,26 @@ class Autenticador(mensaje_pb2_grpc.AutenticadorServicer):
             token = ""
             msj = "Credenciales incorrectas"
         return mensaje_pb2.AuthenticationReply(mensaje=msj, status=stat, token=token)
+    
+class Mensajeria(mensaje_pb2_grpc.MensajeriaServicer):
+
+    #rpc ObtenerBandejaEntrada(UserRequest) returns (BandejaReply){};
+    def ObtenerBandejaEntrada(self, request, context):
+        return super().ObtenerBandejaEntrada(request, context)
+    
+    #rpc ObtenerBandejaSalida(UserRequest) returns (BandejaReply){};
+    def ObtenerBandejaSalida(self, request, context):
+        return super().ObtenerBandejaSalida(request, context)
+    
+    #rpc EnviarCorreo(CorreoNuevo) returns (EnviarCorreoReply){};
+    def EnviarCorreo(self, request, context):
+        return super().EnviarCorreo(request, context)
+    
+    #rpc EliminarCorreo(EliminarRequest) returns (OperacionReply){};
+    def EliminarCorreo(self, request, context):
+        return super().EliminarCorreo(request, context)
+    
+    #rpc Leido(LeidoRequest) returns (OperacionReply){};
+    def Leido(self, request, context):
+        return super().Leido(request, context)
+    
