@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import mensaje_pb2 as mensaje__pb2
+from protos import mensaje_pb2 as protos_dot_mensaje__pb2
 
 
 class AutenticadorStub(object):
@@ -16,8 +16,13 @@ class AutenticadorStub(object):
         """
         self.Autenticar = channel.unary_unary(
                 '/mensajes.Autenticador/Autenticar',
-                request_serializer=mensaje__pb2.AuthenticationRequest.SerializeToString,
-                response_deserializer=mensaje__pb2.AuthenticationReply.FromString,
+                request_serializer=protos_dot_mensaje__pb2.AuthenticationRequest.SerializeToString,
+                response_deserializer=protos_dot_mensaje__pb2.AuthenticationReply.FromString,
+                )
+        self.Registrar = channel.unary_unary(
+                '/mensajes.Autenticador/Registrar',
+                request_serializer=protos_dot_mensaje__pb2.AuthenticationRequest.SerializeToString,
+                response_deserializer=protos_dot_mensaje__pb2.RegistroReply.FromString,
                 )
 
 
@@ -30,13 +35,24 @@ class AutenticadorServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Registrar(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_AutenticadorServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Autenticar': grpc.unary_unary_rpc_method_handler(
                     servicer.Autenticar,
-                    request_deserializer=mensaje__pb2.AuthenticationRequest.FromString,
-                    response_serializer=mensaje__pb2.AuthenticationReply.SerializeToString,
+                    request_deserializer=protos_dot_mensaje__pb2.AuthenticationRequest.FromString,
+                    response_serializer=protos_dot_mensaje__pb2.AuthenticationReply.SerializeToString,
+            ),
+            'Registrar': grpc.unary_unary_rpc_method_handler(
+                    servicer.Registrar,
+                    request_deserializer=protos_dot_mensaje__pb2.AuthenticationRequest.FromString,
+                    response_serializer=protos_dot_mensaje__pb2.RegistroReply.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -60,8 +76,25 @@ class Autenticador(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/mensajes.Autenticador/Autenticar',
-            mensaje__pb2.AuthenticationRequest.SerializeToString,
-            mensaje__pb2.AuthenticationReply.FromString,
+            protos_dot_mensaje__pb2.AuthenticationRequest.SerializeToString,
+            protos_dot_mensaje__pb2.AuthenticationReply.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Registrar(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/mensajes.Autenticador/Registrar',
+            protos_dot_mensaje__pb2.AuthenticationRequest.SerializeToString,
+            protos_dot_mensaje__pb2.RegistroReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -77,28 +110,28 @@ class MensajeriaStub(object):
         """
         self.ObtenerBandejaEntrada = channel.unary_unary(
                 '/mensajes.Mensajeria/ObtenerBandejaEntrada',
-                request_serializer=mensaje__pb2.UserRequest.SerializeToString,
-                response_deserializer=mensaje__pb2.BandejaReply.FromString,
+                request_serializer=protos_dot_mensaje__pb2.UserRequest.SerializeToString,
+                response_deserializer=protos_dot_mensaje__pb2.BandejaReply.FromString,
                 )
         self.ObtenerBandejaSalida = channel.unary_unary(
                 '/mensajes.Mensajeria/ObtenerBandejaSalida',
-                request_serializer=mensaje__pb2.UserRequest.SerializeToString,
-                response_deserializer=mensaje__pb2.BandejaReply.FromString,
+                request_serializer=protos_dot_mensaje__pb2.UserRequest.SerializeToString,
+                response_deserializer=protos_dot_mensaje__pb2.BandejaReply.FromString,
                 )
         self.EnviarCorreo = channel.unary_unary(
                 '/mensajes.Mensajeria/EnviarCorreo',
-                request_serializer=mensaje__pb2.CorreoNuevo.SerializeToString,
-                response_deserializer=mensaje__pb2.EnviarCorreoReply.FromString,
+                request_serializer=protos_dot_mensaje__pb2.CorreoNuevo.SerializeToString,
+                response_deserializer=protos_dot_mensaje__pb2.EnviarCorreoReply.FromString,
                 )
         self.EliminarCorreo = channel.unary_unary(
                 '/mensajes.Mensajeria/EliminarCorreo',
-                request_serializer=mensaje__pb2.EliminarRequest.SerializeToString,
-                response_deserializer=mensaje__pb2.OperacionReply.FromString,
+                request_serializer=protos_dot_mensaje__pb2.EliminarRequest.SerializeToString,
+                response_deserializer=protos_dot_mensaje__pb2.OperacionReply.FromString,
                 )
         self.Leido = channel.unary_unary(
                 '/mensajes.Mensajeria/Leido',
-                request_serializer=mensaje__pb2.LeidoRequest.SerializeToString,
-                response_deserializer=mensaje__pb2.OperacionReply.FromString,
+                request_serializer=protos_dot_mensaje__pb2.LeidoRequest.SerializeToString,
+                response_deserializer=protos_dot_mensaje__pb2.OperacionReply.FromString,
                 )
 
 
@@ -140,28 +173,28 @@ def add_MensajeriaServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'ObtenerBandejaEntrada': grpc.unary_unary_rpc_method_handler(
                     servicer.ObtenerBandejaEntrada,
-                    request_deserializer=mensaje__pb2.UserRequest.FromString,
-                    response_serializer=mensaje__pb2.BandejaReply.SerializeToString,
+                    request_deserializer=protos_dot_mensaje__pb2.UserRequest.FromString,
+                    response_serializer=protos_dot_mensaje__pb2.BandejaReply.SerializeToString,
             ),
             'ObtenerBandejaSalida': grpc.unary_unary_rpc_method_handler(
                     servicer.ObtenerBandejaSalida,
-                    request_deserializer=mensaje__pb2.UserRequest.FromString,
-                    response_serializer=mensaje__pb2.BandejaReply.SerializeToString,
+                    request_deserializer=protos_dot_mensaje__pb2.UserRequest.FromString,
+                    response_serializer=protos_dot_mensaje__pb2.BandejaReply.SerializeToString,
             ),
             'EnviarCorreo': grpc.unary_unary_rpc_method_handler(
                     servicer.EnviarCorreo,
-                    request_deserializer=mensaje__pb2.CorreoNuevo.FromString,
-                    response_serializer=mensaje__pb2.EnviarCorreoReply.SerializeToString,
+                    request_deserializer=protos_dot_mensaje__pb2.CorreoNuevo.FromString,
+                    response_serializer=protos_dot_mensaje__pb2.EnviarCorreoReply.SerializeToString,
             ),
             'EliminarCorreo': grpc.unary_unary_rpc_method_handler(
                     servicer.EliminarCorreo,
-                    request_deserializer=mensaje__pb2.EliminarRequest.FromString,
-                    response_serializer=mensaje__pb2.OperacionReply.SerializeToString,
+                    request_deserializer=protos_dot_mensaje__pb2.EliminarRequest.FromString,
+                    response_serializer=protos_dot_mensaje__pb2.OperacionReply.SerializeToString,
             ),
             'Leido': grpc.unary_unary_rpc_method_handler(
                     servicer.Leido,
-                    request_deserializer=mensaje__pb2.LeidoRequest.FromString,
-                    response_serializer=mensaje__pb2.OperacionReply.SerializeToString,
+                    request_deserializer=protos_dot_mensaje__pb2.LeidoRequest.FromString,
+                    response_serializer=protos_dot_mensaje__pb2.OperacionReply.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -185,8 +218,8 @@ class Mensajeria(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/mensajes.Mensajeria/ObtenerBandejaEntrada',
-            mensaje__pb2.UserRequest.SerializeToString,
-            mensaje__pb2.BandejaReply.FromString,
+            protos_dot_mensaje__pb2.UserRequest.SerializeToString,
+            protos_dot_mensaje__pb2.BandejaReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -202,8 +235,8 @@ class Mensajeria(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/mensajes.Mensajeria/ObtenerBandejaSalida',
-            mensaje__pb2.UserRequest.SerializeToString,
-            mensaje__pb2.BandejaReply.FromString,
+            protos_dot_mensaje__pb2.UserRequest.SerializeToString,
+            protos_dot_mensaje__pb2.BandejaReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -219,8 +252,8 @@ class Mensajeria(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/mensajes.Mensajeria/EnviarCorreo',
-            mensaje__pb2.CorreoNuevo.SerializeToString,
-            mensaje__pb2.EnviarCorreoReply.FromString,
+            protos_dot_mensaje__pb2.CorreoNuevo.SerializeToString,
+            protos_dot_mensaje__pb2.EnviarCorreoReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -236,8 +269,8 @@ class Mensajeria(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/mensajes.Mensajeria/EliminarCorreo',
-            mensaje__pb2.EliminarRequest.SerializeToString,
-            mensaje__pb2.OperacionReply.FromString,
+            protos_dot_mensaje__pb2.EliminarRequest.SerializeToString,
+            protos_dot_mensaje__pb2.OperacionReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -253,7 +286,7 @@ class Mensajeria(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/mensajes.Mensajeria/Leido',
-            mensaje__pb2.LeidoRequest.SerializeToString,
-            mensaje__pb2.OperacionReply.FromString,
+            protos_dot_mensaje__pb2.LeidoRequest.SerializeToString,
+            protos_dot_mensaje__pb2.OperacionReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -3,6 +3,7 @@ package mensajes;
 
 service Autenticador {
     rpc Autenticar(AuthenticationRequest) returns (AuthenticationReply) {};
+    rpc Registrar(AuthenticationRequest) returns (RegistroReply) {};
 }
 
 service Mensajeria {
@@ -49,9 +50,15 @@ message AuthenticationReply {
     optional string token = 3;
 }
 
+message RegistroReply {
+    optional bool status = 1;
+    optional string mensaje = 2;
+}
+
 message LeidoRequest {
     optional string usuario = 1;
     optional string idCorreo = 2;
+    optional string token = 3;
 }
 
 message OperacionReply {
@@ -64,6 +71,7 @@ message CorreoNuevo {
     optional string destinatario = 2;
     optional string asunto = 3;
     optional string contenido = 4;
+    optional string token = 5;
 }
 
 enum TipoBandeja {
@@ -74,6 +82,6 @@ enum TipoBandeja {
 message EliminarRequest {
     optional string usuario = 1;
     optional string idCorreo = 2;
-    
     TipoBandeja Bandeja = 3;
+    optional string token = 4;
 }

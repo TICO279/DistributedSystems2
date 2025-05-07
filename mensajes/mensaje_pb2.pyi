@@ -73,13 +73,23 @@ class AuthenticationReply(_message.Message):
     token: str
     def __init__(self, mensaje: _Optional[str] = ..., status: bool = ..., token: _Optional[str] = ...) -> None: ...
 
+class RegistroReply(_message.Message):
+    __slots__ = ("status", "mensaje")
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    MENSAJE_FIELD_NUMBER: _ClassVar[int]
+    status: bool
+    mensaje: str
+    def __init__(self, status: bool = ..., mensaje: _Optional[str] = ...) -> None: ...
+
 class LeidoRequest(_message.Message):
-    __slots__ = ("usuario", "idCorreo")
+    __slots__ = ("usuario", "idCorreo", "token")
     USUARIO_FIELD_NUMBER: _ClassVar[int]
     IDCORREO_FIELD_NUMBER: _ClassVar[int]
+    TOKEN_FIELD_NUMBER: _ClassVar[int]
     usuario: str
     idCorreo: str
-    def __init__(self, usuario: _Optional[str] = ..., idCorreo: _Optional[str] = ...) -> None: ...
+    token: str
+    def __init__(self, usuario: _Optional[str] = ..., idCorreo: _Optional[str] = ..., token: _Optional[str] = ...) -> None: ...
 
 class OperacionReply(_message.Message):
     __slots__ = ("exito", "mensaje")
@@ -90,23 +100,27 @@ class OperacionReply(_message.Message):
     def __init__(self, exito: bool = ..., mensaje: _Optional[str] = ...) -> None: ...
 
 class CorreoNuevo(_message.Message):
-    __slots__ = ("remitente", "destinatario", "asunto", "contenido")
+    __slots__ = ("remitente", "destinatario", "asunto", "contenido", "token")
     REMITENTE_FIELD_NUMBER: _ClassVar[int]
     DESTINATARIO_FIELD_NUMBER: _ClassVar[int]
     ASUNTO_FIELD_NUMBER: _ClassVar[int]
     CONTENIDO_FIELD_NUMBER: _ClassVar[int]
+    TOKEN_FIELD_NUMBER: _ClassVar[int]
     remitente: str
     destinatario: str
     asunto: str
     contenido: str
-    def __init__(self, remitente: _Optional[str] = ..., destinatario: _Optional[str] = ..., asunto: _Optional[str] = ..., contenido: _Optional[str] = ...) -> None: ...
+    token: str
+    def __init__(self, remitente: _Optional[str] = ..., destinatario: _Optional[str] = ..., asunto: _Optional[str] = ..., contenido: _Optional[str] = ..., token: _Optional[str] = ...) -> None: ...
 
 class EliminarRequest(_message.Message):
-    __slots__ = ("usuario", "idCorreo", "Bandeja")
+    __slots__ = ("usuario", "idCorreo", "Bandeja", "token")
     USUARIO_FIELD_NUMBER: _ClassVar[int]
     IDCORREO_FIELD_NUMBER: _ClassVar[int]
     BANDEJA_FIELD_NUMBER: _ClassVar[int]
+    TOKEN_FIELD_NUMBER: _ClassVar[int]
     usuario: str
     idCorreo: str
     Bandeja: TipoBandeja
-    def __init__(self, usuario: _Optional[str] = ..., idCorreo: _Optional[str] = ..., Bandeja: _Optional[_Union[TipoBandeja, str]] = ...) -> None: ...
+    token: str
+    def __init__(self, usuario: _Optional[str] = ..., idCorreo: _Optional[str] = ..., Bandeja: _Optional[_Union[TipoBandeja, str]] = ..., token: _Optional[str] = ...) -> None: ...
