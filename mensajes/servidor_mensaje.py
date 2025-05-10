@@ -1,4 +1,5 @@
 from concurrent import futures
+from threading import Lock
 import grpc
 import uuid
 
@@ -9,6 +10,7 @@ from usuarios import (
     inicializar_bd as inicializar_db_usuarios,
     registrar_usuarios,        # función real en usuarios.py
     autenticar_usuario,
+    usuario_existe
 )
 
 # ------------------------------
@@ -16,6 +18,7 @@ from usuarios import (
 # ------------------------------
 
 sesiones: dict[str, str] = {}
+sesion_lock = Lock()
 
 def generar_token() -> str:
     """UUID4 como token de sesión."""
@@ -24,7 +27,8 @@ def generar_token() -> str:
 
 def validar_token(token: str, usuario: str) -> bool:
     """Comprueba que el token emitido corresponde al usuario."""
-    return sesiones.get(token) == usuario
+    with sesion_lock:
+        return sesiones.get(token) == usuario
 
 # ------------------------------
 #  Servicios gRPC
@@ -40,7 +44,8 @@ class Autenticador(mensaje_pb2_grpc.AutenticadorServicer):
     def Autenticar(self, request, context):  # AuthenticationRequest → AuthenticationReply
         if autenticar_usuario(request.usuario, request.contrasena):
             token = generar_token()
-            sesiones[token] = request.usuario
+            with sesion_lock:
+                sesiones[token] = request.usuario
             return mensaje_pb2.AuthenticationReply(status=True, mensaje="Autenticado", token=token)
         return mensaje_pb2.AuthenticationReply(status=False, mensaje="Credenciales inválidas", token="")
 
@@ -74,6 +79,11 @@ class Mensajeria(mensaje_pb2_grpc.MensajeriaServicer):
     def EnviarCorreo(self, request, context):
         if not validar_token(request.token, request.remitente):
             return mensaje_pb2.EnviarCorreoReply(exito=False, mensaje="Token inválido", idCorreo="")
+
+        if not usuario_existe(request.destinatario):
+            return mensaje_pb2.EnviarCorreoReply(
+                exito=False, mensaje="El usuario destinatario no existe", idCorreo=""
+            )
 
         if len(mensajes_db.get_inbox(request.destinatario, 1000)) >= 5:
             return mensaje_pb2.EnviarCorreoReply(exito=False, mensaje="Bandeja de entrada llena", idCorreo="")
