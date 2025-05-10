@@ -1,6 +1,7 @@
 syntax = "proto3";
 package mensajes;
 
+
 service Autenticador {
     rpc Autenticar(AuthenticationRequest) returns (AuthenticationReply) {};
     rpc Registrar(AuthenticationRequest) returns (RegistroReply) {};

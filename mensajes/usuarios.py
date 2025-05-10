@@ -24,17 +24,17 @@ def registrar_usuarios(nombre, contrasena):
     with sqlite3.connect(DB_NAME) as conn:
         cur = conn.cursor()
         try:
-            cur.execute("INSERT INTO usuarios (nombre, contrasena_hast) VALUES (?, ?)", (nombre, hash_pass))
+            cur.execute("INSERT INTO usuarios (nombre, contrasena_hash) VALUES (?, ?)", (nombre, hash_pass))
             conn.commit()
             return True, "Usuario registrado correctamente"
         except sqlite3.IntegrityError:
             return False, "El usuario ya existe"
 
 def autenticar_usuario(nombre, contrasena):
-    hash_pass = hashlib.sha256(contrasena.enconde()).hexdigest()
+    hash_pass = hashlib.sha256(contrasena.encode()).hexdigest()
     with sqlite3.connect(DB_NAME) as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM usuarios WHERE nombre = ? AND contrasena_hast = ?", (nombre, hash_pass))
+        cur.execute("SELECT * FROM usuarios WHERE nombre = ? AND contrasena_hash = ?", (nombre, hash_pass))
         if cur.fetchone():
             return True
         else:
