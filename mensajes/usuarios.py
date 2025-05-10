@@ -39,3 +39,9 @@ def autenticar_usuario(nombre, contrasena):
             return True
         else:
             return False
+        
+def usuario_existe(nombre):
+    with sqlite3.connect(DB_NAME) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM usuarios WHERE nombre = ?", (nombre,))
+        return cur.fetchone() is not None

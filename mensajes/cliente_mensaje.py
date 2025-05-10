@@ -114,12 +114,28 @@ class VentanaMenuPrincipal:
         tk.Label(root, text=f"Bienvenido, {USER}").pack(pady=10)
 
         tk.Button(root, text="Bandeja de Entrada", command=self.ver_bandeja_entrada).pack(pady=5)
+        tk.Button(root, text="Bandeja de Salida", command=self.ver_bandeja_salida).pack(pady=5)
         tk.Button(root, text="Redactar Correo", command=self.redactar_correo).pack(pady=5)
-        tk.Button(root, text="Cerrar Sesión", command=self.root.quit).pack(pady=20)
+        tk.Button(root, text="Cerrar Sesión", command=self.cerrar_sesion).pack(pady=20)
 
-    def ver_bandeja_entrada(self):
+    def cerrar_sesion(self):
+
+        confirm = messagebox.askyesno("Confirmar", "¿Desea cerrar la sesión?")
+        if not confirm:
+            return
+
+        global USER, TOKEN
+        USER = ""
+        TOKEN = ""
+        
+        self.root.destroy()
+        nuevo_root = tk.Tk()
+        VentanaLogin(nuevo_root, AUTH)
+        nuevo_root.mainloop()
+
+    def mostrar_bandeja(self, titulo: str, obtener_rpc, mostrar_remitente: bool):
         ventana = tk.Toplevel(self.root)
-        ventana.title("Bandeja de Entrada")
+        ventana.title(titulo)
 
         lista = tk.Listbox(ventana, width=80)
         lista.pack(padx=10, pady=10)
@@ -127,13 +143,14 @@ class VentanaMenuPrincipal:
         correos = []
 
         try:
-            rsp = API.ObtenerBandejaEntrada(mensaje_pb2.UserRequest(usuario=USER, token=TOKEN))
+            rsp = obtener_rpc(mensaje_pb2.UserRequest(usuario=USER, token=TOKEN))
             if not rsp.correos:
                 lista.insert(tk.END, "(Bandeja Vacía)")
             else:
                 for c in rsp.correos:
                     flag = "✓" if c.leido else "•"
-                    linea = f"{flag} {c.idCorreo[:8]}  {c.remitente:<10}  {c.asunto}"
+                    persona = c.remitente if mostrar_remitente else c.destinatario
+                    linea = f"{flag} {c.idCorreo[:8]}  {persona:<10}  {c.asunto}"
                     lista.insert(tk.END, linea)
                     correos.append(c)
         except Exception as e:
@@ -147,33 +164,55 @@ class VentanaMenuPrincipal:
             if idx >= len(correos):
                 return
             correo = correos[idx]
-
-            try:
-                bandeja_rsp = API.ObtenerBandejaEntrada(mensaje_pb2.UserRequest(usuario=USER, token=TOKEN))
-                correo_actual = None
-                for c in bandeja_rsp.correos:
-                    if c.idCorreo == correo.idCorreo:
-                        correo_actual = c
-                        break
-                if correo_actual is None:
-                    messagebox.showerror("Error", "No se pudo encontrar el correo seleccionado.")
-                    return
-            except Exception as e:
-                messagebox.showerror("Error", f"No se pudo obtener el correo: {str(e)}")
-                return
-            
-            try:
-                API.Leido(mensaje_pb2.LeidoRequest(usuario=USER, idCorreo=correo_actual.idCorreo, token=TOKEN))
-            except Exception as e:
-                pass
+            if mostrar_remitente:
+                try:
+                    API.Leido(mensaje_pb2.LeidoRequest(usuario=USER, idCorreo=correo.idCorreo, token=TOKEN))    
+                except:
+                    pass
 
             vista = tk.Toplevel(ventana)
             vista.title("Leer Correo")
-            contenido = f"De: {correo_actual.remitente}\nAsunto: {correo_actual.asunto}\nFecha: {correo_actual.fecha}\n\n{correo_actual.contenido}"
+            
+            cabecera = f"De: {correo.remitente}" if mostrar_remitente else f"Para: {correo.destinatario}"
+            contenido = f"{cabecera}\nAsunto: {correo.asunto}\nFecha: {correo.fecha}\n\n{correo.contenido}"
             tk.Message(vista, text=contenido, width=600).pack(padx=10, pady=10)
 
         lista.bind("<Double-1>", abrir_correo)
 
+        def eliminar_correo():
+            seleccion = lista.curselection()
+            if not seleccion:
+                return
+            idx = seleccion[0]
+            if idx >= len(correos):
+                return
+            correo = correos[idx]
+            confirm = messagebox.askyesno("Confirmar", "¿Eliminar este correo?")
+            if not confirm:
+                return
+            try:
+                tipo_bandeja = mensaje_pb2.ENTRADA if mostrar_remitente else mensaje_pb2.SALIDA
+                rsp = API.EliminarCorreo(mensaje_pb2.EliminarRequest(
+                    usuario=USER,
+                    idCorreo=correo.idCorreo,
+                    Bandeja=tipo_bandeja,
+                    token=TOKEN
+                ))
+                if rsp.exito:
+                    messagebox.showinfo("Eliminado", "Correo eliminado correctamente")
+                    ventana.destroy()
+                    self.mostrar_bandeja(titulo=titulo, obtener_rpc=obtener_rpc, mostrar_remitente=mostrar_remitente)
+                else:
+                    messagebox.showerror("Error", rsp.mensaje)
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo eliminar el correo {str(e)}")
+        tk.Button(ventana, text="Eliminar Correo", command=eliminar_correo).pack(pady=5)
+
+    def ver_bandeja_entrada(self):
+        self.mostrar_bandeja("Bandeja de Entrada", API.ObtenerBandejaEntrada, mostrar_remitente=True)
+    
+    def ver_bandeja_salida(self):
+        self.mostrar_bandeja("Bandeja de Salida", API.ObtenerBandejaSalida, mostrar_remitente=False)
 
     def redactar_correo(self):
         ventana = tk.Toplevel(self.root)
@@ -207,11 +246,12 @@ class VentanaMenuPrincipal:
                     messagebox.showinfo("Éxito", "Correo enviado correctamente")
                     ventana.destroy()
                 else:
-                    messagebox.showerror("Error", rsp.message)
+                    messagebox.showerror("Error", rsp.mensaje)
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo enviar el correo {str(e)}")
         tk.Button(ventana, text="Enviar", command=enviar).pack(pady=10)
 
+"""
 # ------------------------------
 #  Comandos del CLI
 # ------------------------------
@@ -295,7 +335,7 @@ def main() -> None:
         cmd = input("> ").strip().lower()
         MENU.get(cmd, lambda: print("¿? comando desconocido"))()
 
-
+"""
 if __name__ == "__main__":
     init_channel()
     ventana = tk.Tk()
