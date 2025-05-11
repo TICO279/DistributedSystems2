@@ -110,8 +110,14 @@ class Mensajeria(mensaje_pb2_grpc.MensajeriaServicer):
     def EliminarCorreo(self, request, context):
         if not validar_token(request.token, request.usuario):
             return mensaje_pb2.OperacionReply(exito=False, mensaje="Token inválido")
-        bandeja_str = "entrada" if request.Bandeja == mensaje_pb2.ENTRADA else "salida"
-        mensajes_db.delete_message(request.idCorreo, request.usuario, bandeja_str)
+
+        if request.Bandeja == mensaje_pb2.ENTRADA:
+            mensajes_db.marcar_eliminado(id_=request.idCorreo, usuario=request.usuario, campo="eliminado_entrada")
+        else:
+            mensajes_db.marcar_eliminado(id_=request.idCorreo, usuario=request.usuario, campo="eliminado_salida")
+
+        mensajes_db.borrar_si_ambos_eliminaron(request.idCorreo)
+
         return mensaje_pb2.OperacionReply(exito=True, mensaje="Correo eliminado")
 
 

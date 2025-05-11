@@ -48,7 +48,7 @@ def get_inbox(usuario, limit=10):
             cur = conn.cursor()
             cur.execute(
                 "SELECT id, remitente, destinatario, asunto, contenido, fecha, leido "
-                "FROM correos WHERE destinatario=? ORDER BY fecha DESC LIMIT ?",
+                "FROM correos WHERE destinatario=? AND eliminado_entrada=0 ORDER BY fecha DESC LIMIT ?",
                 (usuario, limit)
             )
             return cur.fetchall()
@@ -59,7 +59,7 @@ def get_outbox(usuario, limit=10):
             cur = conn.cursor()
             cur.execute(
                 "SELECT id, remitente, destinatario, asunto, contenido, fecha, leido "
-                "FROM correos WHERE remitente=? ORDER BY fecha DESC LIMIT ?",
+                "FROM correos WHERE remitente=? AND eliminado_salida=0 ORDER BY fecha DESC LIMIT ?",
                 (usuario, limit)
             )
             return cur.fetchall()
@@ -73,10 +73,35 @@ def mark_as_read(id_, usuario):
             )
             conn.commit()
 
+def marcar_eliminado(id_, usuario, campo):
+    """
+    Marca un correo como eliminado lógicamente en la columna correspondiente.
+    campo: 'eliminado_entrada' o 'eliminado_salida'
+    """
+    if campo not in ("eliminado_entrada", "eliminado_salida"):
+        return
+    columna = "destinatario" if campo == "eliminado_entrada" else "remitente"
+    with db_lock:
+        with sqlite3.connect(DB_NAME) as conn:
+            conn.execute(
+                f"UPDATE correos SET {campo}=1 WHERE id=? AND {columna}=?",
+                (id_, usuario)
+            )
+            conn.commit()
+
+
+# Borra físicamente el mensaje si ambos lo eliminaron
+def borrar_si_ambos_eliminaron(id_):
+    with db_lock:
+        with sqlite3.connect(DB_NAME) as conn:
+            conn.execute(
+                "DELETE FROM correos WHERE id=? AND eliminado_entrada=1 AND eliminado_salida=1",
+                (id_,)
+            )
+            conn.commit()
+"""
 def delete_message(id_, usuario, bandeja):
-    """
-    bandeja: 'entrada' or 'salida'
-    """
+    #bandeja: 'entrada' or 'salida'
     col = "destinatario" if bandeja == "entrada" else "remitente"
     with db_lock:
         with sqlite3.connect(DB_NAME) as conn:
@@ -85,3 +110,4 @@ def delete_message(id_, usuario, bandeja):
                 (id_, usuario)
             )
             conn.commit()
+"""
