@@ -20,6 +20,14 @@ def init_channel() -> None:
     AUTH = mensaje_pb2_grpc.AutenticadorStub(chan)
     API = mensaje_pb2_grpc.MensajeriaStub(chan)
 
+def centrar_ventana(ventana, ancho=400, alto=300):
+    ventana.update_idletasks()
+    w = ancho
+    h = alto
+    x = (ventana.winfo_screenwidth() // 2) - (w // 2)
+    y = (ventana.winfo_screenheight() // 2) - (h // 2)
+    ventana.geometry(f"{w}x{h}+{x}+{y}")
+
 # ------------------------------
 #  Ventana de Inicio de Sesión
 # ------------------------------
@@ -28,6 +36,7 @@ class VentanaLogin:
     def __init__(self, root, auth_stub):
         self.root = root
         self.root.title("TurboMessage - Login")
+        centrar_ventana(root, 400, 250)
         self.auth = auth_stub
 
         tk.Label(root, text="Usuario").pack()
@@ -44,8 +53,13 @@ class VentanaLogin:
 
     def abrir_ventana_registro(self):
         ventana_registro = tk.Toplevel(self.root)
+        centrar_ventana(ventana_registro, 400, 250)
+        ventana_registro.transient(self.root)
+        ventana_registro.grab_set()
         self.root.withdraw()
         VentanaRegistro(ventana_registro, self.auth)
+        self.root.wait_window(ventana_registro)
+        self.root.deiconify()
 
     def login(self):
         import mensaje_pb2  # evita circularidad
@@ -72,6 +86,7 @@ class VentanaRegistro:
     def __init__(self, root, auth_stub):
         self.root = root
         self.root.title("TurboMessage - Registro")
+        centrar_ventana(root, 400, 250)
         self.auth = auth_stub
 
         tk.Label(root, text="Nuevo usuario").pack()
@@ -110,6 +125,7 @@ class VentanaMenuPrincipal:
     def __init__(self, root):
         self.root = root
         self.root.title("TurboMessage - Menú Principal")
+        centrar_ventana(root, 400, 300)
 
         tk.Label(root, text=f"Bienvenido, {USER}").pack(pady=10)
 
@@ -135,8 +151,11 @@ class VentanaMenuPrincipal:
 
     def mostrar_bandeja(self, titulo: str, obtener_rpc, mostrar_remitente: bool):
         ventana = tk.Toplevel(self.root)
+        centrar_ventana(ventana, 700, 400)
         ventana.title(titulo)
-
+        ventana.transient(self.root)
+        ventana.grab_set()
+        
         lista = tk.Listbox(ventana, width=80)
         lista.pack(padx=10, pady=10)
 
@@ -171,11 +190,14 @@ class VentanaMenuPrincipal:
                     pass
 
             vista = tk.Toplevel(ventana)
+            centrar_ventana(vista, 600, 350)
             vista.title("Leer Correo")
-            
+            vista.transient(ventana)
+            vista.grab_set()
+
             cabecera = f"De: {correo.remitente}" if mostrar_remitente else f"Para: {correo.destinatario}"
             contenido = f"{cabecera}\nAsunto: {correo.asunto}\nFecha: {correo.fecha}\n\n{correo.contenido}"
-            tk.Message(vista, text=contenido, width=600).pack(padx=10, pady=10)
+            tk.Message(vista, text=contenido, width=600, justify="left").pack(padx=10, pady=10, anchor="w")
 
         lista.bind("<Double-1>", abrir_correo)
 
@@ -208,6 +230,8 @@ class VentanaMenuPrincipal:
                 messagebox.showerror("Error", f"No se pudo eliminar el correo {str(e)}")
         tk.Button(ventana, text="Eliminar Correo", command=eliminar_correo).pack(pady=5)
 
+        self.root.wait_window(ventana)
+
     def ver_bandeja_entrada(self):
         self.mostrar_bandeja("Bandeja de Entrada", API.ObtenerBandejaEntrada, mostrar_remitente=True)
     
@@ -216,7 +240,10 @@ class VentanaMenuPrincipal:
 
     def redactar_correo(self):
         ventana = tk.Toplevel(self.root)
+        centrar_ventana(ventana, 500, 400)
         ventana.title("Redactar Correo")
+        ventana.transient(self.root)
+        ventana.grab_set()
 
         tk.Label(ventana, text="Para:").pack()
         entry_para = tk.Entry(ventana, width=50)
@@ -249,7 +276,10 @@ class VentanaMenuPrincipal:
                     messagebox.showerror("Error", rsp.mensaje)
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo enviar el correo {str(e)}")
+
         tk.Button(ventana, text="Enviar", command=enviar).pack(pady=10)
+
+        self.root.wait_window(ventana)
 
 """
 # ------------------------------
