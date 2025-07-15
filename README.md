@@ -1,122 +1,66 @@
-# 📬 TurboMessage
+# TurboMessage
 
-TurboMessage es un sistema de mensajería distribuido desarrollado con Python y gRPC. Permite a los usuarios registrarse, iniciar sesión, enviar correos, revisar sus bandejas de entrada y salida, marcar mensajes como leídos y eliminar correos. Todo con persistencia en SQLite y una interfaz gráfica hecha con Tkinter.
+This project implements a **distributed email system** in Python using **gRPC**, with both a **graphical Tkinter interface** and **command-line support**. It features user authentication, secure token-based messaging, inbox/outbox management, and SQLite-based persistent storage.
 
----
+## Features
 
-## ⚙️ Características principales
+- **gRPC Server in Python**:
+  - Handles user authentication, email sending, inbox/outbox retrieval, marking messages as read, and logical deletion.
+  - Uses UUID-based token validation for user sessions.
+  - Enforces per-user message limits (5 messages per inbox/outbox).
 
-- Registro y autenticación de usuarios (persistente).
-- Envío de correos entre usuarios existentes.
-- Bandeja de entrada y salida con límite de 5 mensajes cada una.
-- Marcado de correos como leídos.
-- Eliminación de correos.
-- Gestión de sesiones seguras con tokens únicos.
-- Interfaz gráfica completa y funcional.
-- Concurrencia segura (uso de `threading.Lock` y `SQLite WAL`).
-- Estructura modular (cliente, servidor, base de datos, pruebas).
+- **Tkinter GUI Client**:
+  - `cliente_mensaje.py`: Login, registration, email composing, inbox/outbox viewing, and message deletion.
+  - Responsive layout with modal windows for each operation.
+  - Visually marks unread emails and updates status upon read.
 
----
+- **Command-Line Interface**:
+  - CLI built into `cliente_mensaje.py` allows registration, login, sending messages, viewing inbox, marking as read, and deleting.
+  - Useful for quick testing or terminal usage.
 
-## 🗂️ Estructura del proyecto
+- **Database Management**:
+  - `mensajes_db.py`: Handles message creation, retrieval, update, and logical deletion with `threading.Lock`.
+  - `usuarios.py`: Stores hashed user passwords and checks for uniqueness during registration.
 
-```
-TURBOMESSAGE/
-├── mensajes/
-│   ├── cliente_mensaje.py       # Interfaz gráfica con Tkinter
-│   ├── servidor_mensaje.py      # Servidor gRPC
-│   ├── usuarios.py              # Gestión de usuarios
-│   ├── mensajes_db.py           # Base de datos de correos
-│   ├── test_usuario.py          # Pruebas de usuarios
-│   ├── test_mensajes_db.py      # Pruebas de correos
-│   ├── mensaje_pb2.py           # Generado automáticamente
-│   ├── mensaje_pb2_grpc.py      # Generado automáticamente
-│   ├── mensajes.db              # Base de datos de correos
-│   ├── usuarios.db              # Base de datos de usuarios
-│   └── __init__.py
-├── protos/
-│   └── mensaje.proto            # Archivo .proto con definición del servicio
-└── README.md
-```
+- **Testing Scripts**:
+  - `test_usuario.py`: Validates user registration and login with correct/incorrect passwords.
+  - `test_mensajes_db.py`: Inserts test messages, simulates reading/deletion, and prints inbox status.
 
----
+## Setup Instructions
 
-## 📦 Requisitos
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/YourUsername/TurboMessage.git
+   cd TurboMessage
 
-- Python 3.9
-- `protobuf >= 4.25.3`
-- `grpcio >= 1.60.0`
-- `grpcio-tools`
 
-Instala los paquetes necesarios:
+2.  **Generate Protobuf Files**:
+    ```bash
+    python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. mensaje.proto
 
-```bash
-pip install protobuf==4.25.3 grpcio==1.60.0 grpcio-tools
-```
+3.  **Run the Server**:
+    ```bash
+    python servidor_mensaje.py
 
-O si utilizas un ambiente de Conda:
-- Puedes descargarlo desde Anaconda
-- Utilizar el comando:
-```bash
-conda install -c conda-forge protobuf=4.25.3 grpcio=1.60.0
-```
+4.  **Start the Client**:
+    ```bash
+    python cliente_mensaje.py
 
----
+5.  **Run Tests (Optional)**:
+    ```bash
+    python test_usuario.py
+    python test_mensajes_db.py
 
-## 🔧 Generación de stubs gRPC
+## Notes and Limitations
 
-Desde el directorio raíz del proyecto:
+-   The server stores tokens in memory; sessions reset when the server restarts.
 
-```bash
-python -m grpc_tools.protoc -I. --python_out=mensajes --pyi_out=mensajes --grpc_python_out=mensajes ./protos/mensaje.proto
-```
+-   Each inbox and outbox is limited to 5 messages per user.
 
-> ⚠️ En Mac se requiere Python 3.10 específicamente para compatibilidad completa con `grpcio`.
+-   Deletion is logical first; messages are physically deleted when both sender and recipient remove them.
 
----
+-   No attachments or rich formatting are supported --- only plain text emails.
 
-## 🚀 Cómo ejecutar
+-   GUI uses Tkinter, which may require adaptation for different platforms.
 
-### 1. Inicia el servidor
-
-```bash
-python mensajes/servidor_mensaje.py
-```
-
-### 2. Ejecuta el cliente (interfaz)
-
-```bash
-python mensajes/cliente_mensaje.py
-```
-
----
-
-## 🧪 Pruebas
-
-Puedes ejecutar pruebas básicas con:
-
-```bash
-python mensajes/test_usuario.py
-python mensajes/test_mensajes_db.py
-```
-
----
-
-## 🛡️ Seguridad
-
-- Las contraseñas se almacenan con hash SHA-256.
-- Las sesiones de usuarios están protegidas con tokens UUID4.
-- Acceso a base de datos protegido con `threading.Lock` y modo `WAL` activado.
-
----
-
-## 📝 Licencia
-
-Este proyecto fue desarrollado con fines académicos. Libre de uso bajo los términos de la licencia MIT.
-
----
-
-## 👨‍💻 Autores
-
-**Abraham Martínez Cerón y Patricio Pizaña Vela**  
-Proyecto desarrollado para la asignatura de Sistemas Distribuidos.
+-   Error handling assumes correct server availability; no retries or failovers are implemented.
