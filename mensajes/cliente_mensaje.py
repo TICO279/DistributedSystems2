@@ -54,12 +54,10 @@ class VentanaLogin:
     def abrir_ventana_registro(self):
         ventana_registro = tk.Toplevel(self.root)
         centrar_ventana(ventana_registro, 400, 250)
+        VentanaRegistro(ventana_registro, self.auth)
         ventana_registro.transient(self.root)
         ventana_registro.grab_set()
-        self.root.withdraw()
-        VentanaRegistro(ventana_registro, self.auth)
         self.root.wait_window(ventana_registro)
-        self.root.deiconify()
 
     def login(self):
         import mensaje_pb2  # evita circularidad
@@ -100,9 +98,10 @@ class VentanaRegistro:
         tk.Button(root, text="Registrar", command=self.registrar).pack()
 
     def registrar(self):
-        import mensaje_pb2
+        import mensaje_pb2 
         usuario = self.entry_usuario.get()
         contrasena = self.entry_contra.get()
+
         rsp = self.auth.Registrar(mensaje_pb2.AuthenticationRequest(usuario=usuario, contrasena=contrasena))
         if rsp.status:
             global USER, TOKEN
@@ -111,7 +110,7 @@ class VentanaRegistro:
             messagebox.showinfo("Registro", rsp.mensaje)
             self.root.destroy()
             nuevo_root = tk.Tk()
-            VentanaMenuPrincipal(nuevo_root)
+            VentanaLogin(nuevo_root, self.auth)
             nuevo_root.mainloop()
         else:
             messagebox.showerror("Error", rsp.mensaje)
@@ -135,7 +134,6 @@ class VentanaMenuPrincipal:
         tk.Button(root, text="Cerrar Sesión", command=self.cerrar_sesion).pack(pady=20)
 
     def cerrar_sesion(self):
-
         confirm = messagebox.askyesno("Confirmar", "¿Desea cerrar la sesión?")
         if not confirm:
             return
@@ -183,9 +181,15 @@ class VentanaMenuPrincipal:
             if idx >= len(correos):
                 return
             correo = correos[idx]
-            if mostrar_remitente:
+            if mostrar_remitente and not correo.leido:
                 try:
-                    API.Leido(mensaje_pb2.LeidoRequest(usuario=USER, idCorreo=correo.idCorreo, token=TOKEN))    
+                    API.Leido(mensaje_pb2.LeidoRequest(usuario=USER, idCorreo=correo.idCorreo, token=TOKEN))
+                    correo.leido = True
+                    flag = "✓"
+                    persona = correo.remitente
+                    nueva_linea = f"{flag} {correo.idCorreo[:8]}  {persona:<10}  {correo.asunto}"
+                    lista.delete(idx)
+                    lista.insert(idx, nueva_linea)
                 except:
                     pass
 
@@ -281,7 +285,7 @@ class VentanaMenuPrincipal:
 
         self.root.wait_window(ventana)
 
-"""
+
 # ------------------------------
 #  Comandos del CLI
 # ------------------------------
@@ -357,15 +361,15 @@ MENU = {
 # ------------------------------
 #  Bucle interactivo
 # ------------------------------
-
-def main() -> None:
+"""
+if __name__ == "__main__":
     init_channel()
     print("Comandos: r egistrar · l ogin · i nbox · s end · m ark read · d elete · q uit")
     while True:
         cmd = input("> ").strip().lower()
         MENU.get(cmd, lambda: print("¿? comando desconocido"))()
-
 """
+
 if __name__ == "__main__":
     init_channel()
     ventana = tk.Tk()
